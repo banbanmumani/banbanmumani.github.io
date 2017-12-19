@@ -1,0 +1,323 @@
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+도커설치
+sudo apt-get install docker.io
+
+링크생성
+sudo ln -sf /usr/bin/docker.io /usr/local/bin/docker
+
+도커시작
+sudo service docker start
+ps -ef|grep docker
+
+도커 설치 확인
+sudo docker run hello-world
+
+결과 메시지
+    Unable to find image 'hello-world:latest' locally
+    latest: Pulling from library/hello-world
+    b04784fba78d: Pull complete
+    Digest: sha256:f3b3b28a45160805bb16542c9531888519430e9e6d6ffc09d72261b0d26ff74f
+    Status: Downloaded newer image for hello-world:latest
+
+    Hello from Docker!
+    This message shows that your installation appears to be working correctly.
+
+    To generate this message, Docker took the following steps:
+     1. The Docker client contacted the Docker daemon.
+     2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+     3. The Docker daemon created a new container from that image which runs the
+        executable that produces the output you are currently reading.
+     4. The Docker daemon streamed that output to the Docker client, which sent it
+        to your terminal.
+
+    To try something more ambitious, you can run an Ubuntu container with:
+     $ docker run -it ubuntu bash
+
+    Share images, automate workflows, and more with a free Docker ID:
+     https://cloud.docker.com/
+
+    For more examples and ideas, visit:
+     https://docs.docker.com/engine/userguide/
+
+레드마인 검색
+docker search redmine
+
+----------------------------------------------------
+mysql 실행
+sudo docker run -d --name mysql -e MYSQL_ROOT_PASSWORD=secret -e MYSQL_DATABASE=redmine mysql --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci -v /data/msca/mysqldocker:/var/lib/mysql -p 3306:3306
+docker run -p 3306:3306 -d --name mysql -e MYSQL_ROOT_PASSWORD=secret -e MYSQL_DATABASE=redmine --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci -v /data/msca/mysqldocker:/var/lib/mysql mysql
+
+docker run --name mysql -v /my/own/datadir:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=secret -d mysql:tag
+
+docker run --name mysql -v /data/msca/mysqldocker:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=secret -d mysql
+
+docker run --name mysql -v /data/msca/mysqldocker:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=msca@32 -e MYSQL_USER=daumsoft -e MYSQL_PASSWORD=daumsoft0531 -d -p 3306:3306 mysql:latest --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+[mysql] https://hub.docker.com/_/mysql/
+
+----------------------------------------------------
+레드마인 실행
+sudo docker run -d --name redmine -p 3000:3000 --link mysql:mysql redmine
+
+도커 이미지 확인
+sudo docker images
+
+도커 프로세스 확인
+sudo docker ps
+
+도커 컨테이너 접속
+docker exec -i -t mysql bash
+
+
+
+----------------------
+레드마인 로그 위치
+/usr/src/redmine/log/
+
+
+---------------------
+sudo 없이 docker 명령어
+
+sudo usermod -aG docker ${USER}
+
+su - ${USER}
+
+id -nG
+
+[출처] https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
+
+
+
+---------------------------------------
+도커, 깃랩, 젠킨스, 자바 배포
+
+http://kr.johnjhkoo.com/2017/06/09/docker-jenkins%EC%99%80-gitlab-%EC%97%B0%EB%8F%99-docker-%EC%BB%A8%ED%85%8C%EC%9D%B4%EB%84%88-%EB%B9%8C%EB%93%9C-%EB%B0%8F-%EB%B0%B0%ED%8F%AC/
+
+
+
+rake redmine:plugins:migrate RAILS_ENV=production
+
+
+
+------------------------------------------
+깃랩 설치
+
+docker run --detach \
+    --publish 10443:443 --publish 10000:80 --publish 10022:22 \
+    --name gitlab \
+    --restart always \
+    --volume /srv/gitlab/config:/etc/gitlab \
+    --volume /srv/gitlab/logs:/var/log/gitlab \
+    --volume /srv/gitlab/data:/var/opt/gitlab \
+    gitlab/gitlab-ce:latest
+
+
+빗버킷 임포트
+
+    gitlab_rails['omniauth_providers'] = [
+  {
+    "name" => "bitbucket",
+    "app_id" => "fZssYkBjr6Xxm3SHgx",
+    "app_secret" => "BHkQERtAuqF9ZK25skagZ7KBjxf7B2zd",
+    "url" => "https://bitbucket.org/"
+  }
+]
+
+
+----------------------------------------------
+깃 레파지토리 변경
+
+git remote set-url origin http://112.175.32.84:10000/miningservice/mskm_admin_v1.git
+
+----------------------------------------------
+미디어위키
+
+docker run --name mediawiki --link mysql:mysql -p 10080:80 -d synctree/mediawiki
+
+https://hub.docker.com/r/synctree/mediawiki/
+
+
+-------------------------------------------------
+
+function send(val) {
+    $.ajax({
+        type: "POST",
+        url: "/event/onepiece/vote/",
+        data: {val: val},
+        dataType: "json",
+        traditional: true,
+        success: function(msg) {
+            console.log(msg);
+        }
+    });
+}
+
+for (var i = 0; i < 12; i++) {
+
+}
+
+1024 * 4 = 2048 * 2 = 4096
+
+1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096
+
+function pow(n, s){
+    var re = 1;
+    if(s == undefined) s = 2;
+    for(var i =0; i<n; i++){
+        re = re *s;
+    }
+    return re;
+}
+
+-----------------------------------------------------------------
+var result = {};
+function send(val) {
+    $.ajax({
+        type: "POST",
+        url: "/event/onepiece/vote/",
+        data: {val: val},
+        dataType: "json",
+        traditional: true,
+        success: function(msg) {
+            var key = msg.answer;
+            if(!result[key]) {
+                result[key] = [];
+            }
+            result[key].push(val);
+        }
+    });
+}
+function getAnswerArr(x) {
+    function pow(n, s){
+        var re = 1;
+        if(s == undefined) s = 2;
+        for(let i =0; i<n; i++){
+            re = re *s;
+        }
+        return re;
+    }
+    var n = x;
+    var arr = [];
+    for (let i = 11; i >= 0; i--) {
+
+        var re = Number.parseInt(n/pow(i))
+        var n = Number.parseInt(n%pow(i))
+        if (re == 0) {
+            arr.push("0");
+        } else {
+            arr.push("1");
+        }
+    }
+    return arr;
+}
+
+for (let i=0; i<=4096; i++){
+    send(getAnswerArr(i));
+}
+console.log(result);
+
+
+
+------------------------------------------------------------------------------
+소나큐브
+
+-Dsonar.host.url=http://112.175.32.84:9000 \
+mvn sonar:sonar \
+-Dsonar.login=d3181ef1d3c8224334ca41bc3d5140286a08f0b6
+
+소나큐브 도커
+#1. postgresql 과 sonarqube의 링크를 만든다
+#2. postgresql 실행
+#3. sonarqube 실행 (이때 jdbc:postgresql://'sonar-postgres' 이 부분은 postgresql의 컨테이너 명칭)
+
+docker network create sonar-network
+
+docker run --name sonar-postgres --network sonar-network -e POSTGRES_PASSWORD=msca@32 -d postgres
+
+docker run -d --name sonarqube \
+--network sonar-network \
+-p 9000:9000 -p 9092:9092 \
+-e SONARQUBE_JDBC_USERNAME=postgres \
+-e SONARQUBE_JDBC_PASSWORD=msca@32 \
+-e SONARQUBE_JDBC_URL=jdbc:postgresql://sonar-postgres/sonar \
+sonarqube
+
+network 설명 출처
+http://pyrasis.com/book/DockerForTheReallyImpatient/Chapter06/02
+
+https://hub.docker.com/_/postgres/
+https://hub.docker.com/_/sonarqube/
+
+소나큐브 설치 후 jenkins와 연동할때 토큰 발급할것
+
+
+mvn sonar:sonar \
+-Dsonar.host.url=http://112.175.32.84:9000 \
+-Dsonar.login=f13946e8c40fc6f83a7dcaf44afdeed971e7d084
+
+274
+누구의 의사로 계약이 해지되는지 / 임대인과 임차인 중 누구의 의사로 계약이 해지되는지 / 계약 해지 의사를 누가 밝혔는지 /
+
+
+------------------------------------------------------------------------------
+data
+
+surefire 과 jacoco 를 동시에 사용할 때 surefire에 argline이 설정되어 있으면
+jacoco plugin의 설정을 덮어 씌우기 떄문에 surefire의 argline 설정을 properties 로 옮겨서 사용한다.
+
+
+------------------------------------------------------------------------------
+nas -> qnap 서버에 있고
+
+마운트 한다음
+
+ms2 에 nfs/scm 스크립트 실행하면 svn 실행
+
+
+
+todo 질문 답변 중복 체크
+
+조건값의 동의 - 온톨로지
+
+
+-------------------------------------------------------------------------------
+
+도커 mysql 계정 추가
+
+INSERT INTO user (Host, User, authentication_string, ssl_cipher) VALUES ('localhost', 'melon', password('@melon'), '');
+
+create user 'melon'@'localhost' identified by '@melon';
+
+도커 mysql 백업/복원
+
+# Backup
+docker exec CONTAINER /usr/bin/mysqldump -u root --password=root DATABASE > backup.sql
+
+# Restore
+cat backup.sql | docker exec -i CONTAINER /usr/bin/mysql -u root --password=root DATABASE
+
+
+cat melon_bak.sql | docker exec -i mysql /usr/bin/mysql -u melon --password=@melon melon
+
+docker exec mysql /usr/bin/mysqldump -u root --password=root -h 112.175.32.83 melon > backup.sql
+
+
+-------------------
+
+ORACLE
+
+테이블 피벗
+
+SELECT *
+FROM
+(
+	테이블
+)
+PIVOT
+(
+	FOR 대상 IN (a as a, b as b)
+)
+
+합계 내기
+GROUP BY ROLLUP ()

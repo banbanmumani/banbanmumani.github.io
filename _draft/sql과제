@@ -1,0 +1,86 @@
+-- 주문 별 합계
+SELECT sub.OrderID, sum(sub.sum)
+FROM
+  (SELECT
+     od.OrderID,
+     od.UnitPrice * od.Quantity - od.Quantity * od.Discount AS sum
+   FROM OrderDetails od
+  ) sub, Products p, Categories c
+GROUP BY sub.OrderID;
+
+-- 주문별 합계 min
+SELECT sub.OrderID, sum(sub.sum) FROM (SELECT od.OrderID, od.UnitPrice * od.Quantity - od.Quantity * od.Discount AS sum FROM OrderDetails od) sub, Products p, Categories c GROUP BY sub.OrderID;
+
+SELECT o.ORDERID, c.CATEGORYNAME,  sub.sum
+FROM ORDERS o, ORDERDETAILS od, PRODUCTS p, CATEGORIES c
+  , (SELECT sub.OrderID, sum(sub.sum) as sum FROM (SELECT od.OrderID, od.UnitPrice * od.Quantity - od.Quantity * od.Discount AS sum FROM OrderDetails od) sub, Products p, Categories c GROUP BY sub.OrderID) sub
+WHERE o.ORDERID = od.ORDERID AND od.PRODUCTID = p.PRODUCTID AND p.CATEGORYID = c.CATEGORYID AND o.ORDERID = sub.ORDERID
+;
+
+-- 지역, 카테고리 sum 용 sub 테이블
+SELECT DISTINCT o.OrderID, sub_sum.sum, c.CategoryName, r.RDescription
+FROM Orders o, OrderDetails od, Products p, Categories c
+  , EmployeeTerritories et, Territories t, Region r
+  , (SELECT od.OrderID, od.UnitPrice * od.Quantity - od.Quantity * od.Discount AS sum FROM OrderDetails od) sub_sum
+WHERE 1 = 1
+      AND o.OrderID = od.OrderID AND od.ProductID = p.ProductID AND p.CategoryID = c.CategoryID
+      AND o.EmployeeID = et.EmployeeID AND et.TerritoryID = t.TerritoryID AND t.RegionID = r.RegionID
+      AND o.OrderID = sub_sum.OrderID
+;
+
+-- 지역, 카테고리 sum 용 sub 테이블 min
+SELECT DISTINCT o.OrderID, sub_sum.sum, c.CategoryName, r.RDescription FROM Orders o, OrderDetails od, Products p, Categories c, EmployeeTerritories et, Territories t, Region r, (SELECT od.OrderID, od.UnitPrice * od.Quantity - od.Quantity * od.Discount AS sum FROM OrderDetails od) sub_sum WHERE 1 = 1 AND o.OrderID = od.OrderID AND od.ProductID = p.ProductID AND p.CategoryID = c.CategoryID AND o.EmployeeID = et.EmployeeID AND et.TerritoryID = t.TerritoryID AND t.RegionID = r.RegionID AND o.OrderID = sub_sum.OrderID
+;
+
+-- group by
+SELECT DECODE(s.RDESCRIPTION, null,'Total', s.RDESCRIPTION) as RD, DECODE(s.CATEGORYNAME, null, 'Total', s.CATEGORYNAME) as CN, SUM(s.sum) as SUM
+FROM
+  (
+    SELECT DISTINCT sub_sum.sum, c.CategoryName, r.RDescription FROM Orders o, OrderDetails od, Products p, Categories c, EmployeeTerritories et, Territories t, Region r, (SELECT od.OrderID, od.UnitPrice * od.Quantity - od.Quantity * od.Discount AS sum FROM OrderDetails od) sub_sum WHERE 1 = 1 AND o.OrderID = od.OrderID AND od.ProductID = p.ProductID AND p.CategoryID = c.CategoryID AND o.EmployeeID = et.EmployeeID AND et.TerritoryID = t.TerritoryID AND t.RegionID = r.RegionID AND o.OrderID = sub_sum.OrderID
+  ) s
+GROUP BY ROLLUP (s.RDESCRIPTION, s.CATEGORYNAME) HAVING GROUPING_ID(s.RDESCRIPTION, s.CATEGORYNAME) IN (0, 1)
+-- GROUP BY ROLLUP (s.CATEGORYNAME, s.RDESCRIPTION)
+;
+
+-- group by min
+SELECT DECODE(s.RDESCRIPTION, null,'Total', s.RDESCRIPTION) as RD, DECODE(s.CATEGORYNAME, null, 'Total', s.CATEGORYNAME) as CN, SUM(s.sum) as SUM FROM (SELECT DISTINCT sub_sum.sum, c.CategoryName, r.RDescription FROM Orders o, OrderDetails od, Products p, Categories c, EmployeeTerritories et, Territories t, Region r, (SELECT od.OrderID, od.UnitPrice * od.Quantity - od.Quantity * od.Discount AS sum FROM OrderDetails od) sub_sum WHERE 1 = 1 AND o.OrderID = od.OrderID AND od.ProductID = p.ProductID AND p.CategoryID = c.CategoryID AND o.EmployeeID = et.EmployeeID AND et.TerritoryID = t.TerritoryID AND t.RegionID = r.RegionID AND o.OrderID = sub_sum.OrderID) s GROUP BY ROLLUP (s.RDESCRIPTION, s.CATEGORYNAME) HAVING GROUPING_ID(s.RDESCRIPTION, s.CATEGORYNAME) IN (0, 1)
+;
+
+
+-- 결과 더하기 전
+SELECT *
+FROM
+  (
+    SELECT DECODE(s.RDESCRIPTION, null,'Total', s.RDESCRIPTION) as RD, DECODE(s.CATEGORYNAME, null, 'Total', s.CATEGORYNAME) as CN, SUM(s.sum) as SUM FROM (SELECT DISTINCT sub_sum.sum, c.CategoryName, r.RDescription FROM Orders o, OrderDetails od, Products p, Categories c, EmployeeTerritories et, Territories t, Region r, (SELECT od.OrderID, od.UnitPrice * od.Quantity - od.Quantity * od.Discount AS sum FROM OrderDetails od) sub_sum WHERE 1 = 1 AND o.OrderID = od.OrderID AND od.ProductID = p.ProductID AND p.CategoryID = c.CategoryID AND o.EmployeeID = et.EmployeeID AND et.TerritoryID = t.TerritoryID AND t.RegionID = r.RegionID AND o.OrderID = sub_sum.OrderID) s GROUP BY ROLLUP (s.RDESCRIPTION, s.CATEGORYNAME) HAVING GROUPING_ID(s.RDESCRIPTION, s.CATEGORYNAME) IN (0, 1)
+  )
+PIVOT
+  (
+    SUM(sum)
+    FOR cn IN ('Beverages' as "Beverages", 'Condiments' as "Condiments", 'Confections' as "Confections", 'Dairy Products' as "Dairy Products", 'Grains/Cereals' as "Grains/Cereals", 'Meat/Poultry' as "Meat/Poultry", 'Produce' as "Produce", 'Seafood' as "Seafood", 'Total' as "Total")
+  )
+
+;
+
+-- min
+SELECT DECODE(a.RD, null,'Total', a.RD) as RD, a."Beverages", a."Condiments", a."Confections", a."Confections", a."Dairy Products", a."Grains/Cereals", a."Meat/Poultry", a."Produce", a."Seafood", a."Total"
+FROM
+  (
+    SELECT * FROM (SELECT DECODE(s.RDESCRIPTION, null,'Total', s.RDESCRIPTION) as RD, DECODE(s.CATEGORYNAME, null, 'Total', s.CATEGORYNAME) as CN, SUM(s.sum) as SUM FROM (SELECT DISTINCT sub_sum.sum, c.CategoryName, r.RDescription FROM Orders o, OrderDetails od, Products p, Categories c, EmployeeTerritories et, Territories t, Region r, (SELECT od.OrderID, od.UnitPrice * od.Quantity - od.Quantity * od.Discount AS sum FROM OrderDetails od) sub_sum WHERE 1 = 1 AND o.OrderID = od.OrderID AND od.ProductID = p.ProductID AND p.CategoryID = c.CategoryID AND o.EmployeeID = et.EmployeeID AND et.TerritoryID = t.TerritoryID AND t.RegionID = r.RegionID AND o.OrderID = sub_sum.OrderID) s GROUP BY ROLLUP (s.RDESCRIPTION, s.CATEGORYNAME) HAVING GROUPING_ID(s.RDESCRIPTION, s.CATEGORYNAME) IN (0, 1)) PIVOT(SUM(sum) FOR cn IN ('Beverages' as "Beverages", 'Condiments' as "Condiments", 'Confections' as "Confections", 'Dairy Products' as "Dairy Products", 'Grains/Cereals' as "Grains/Cereals", 'Meat/Poultry' as "Meat/Poultry", 'Produce' as "Produce", 'Seafood' as "Seafood", 'Total' as "Total"))
+  ) a
+
+;
+
+-- ??
+SELECT NVL(to_char(a.RD), 'Total') as RD, SUM(a."Beverages") as "Beverages", SUM(a."Condiments") as "Condiments", SUM(a."Confections") as "Confections", SUM(a."Confections") as "Confections", SUM(a."Dairy Products") as "Dairy Products", SUM(a."Grains/Cereals") as "Grains/Cereals", SUM(a."Meat/Poultry") as "Meat/Poultry", SUM(a."Produce") as "Produce", SUM(a."Seafood") as "Seafood", SUM(a."Total") as "Total"
+FROM
+  (
+    SELECT * FROM (SELECT DECODE(s.RDESCRIPTION, null,'Total', s.RDESCRIPTION) as RD, DECODE(s.CATEGORYNAME, null, 'Total', s.CATEGORYNAME) as CN, SUM(s.sum) as SUM FROM (SELECT DISTINCT sub_sum.sum, c.CategoryName, r.RDescription FROM Orders o, OrderDetails od, Products p, Categories c, EmployeeTerritories et, Territories t, Region r, (SELECT od.OrderID, od.UnitPrice * od.Quantity - od.Quantity * od.Discount AS sum FROM OrderDetails od) sub_sum WHERE 1 = 1 AND o.OrderID = od.OrderID AND od.ProductID = p.ProductID AND p.CategoryID = c.CategoryID AND o.EmployeeID = et.EmployeeID AND et.TerritoryID = t.TerritoryID AND t.RegionID = r.RegionID AND o.OrderID = sub_sum.OrderID) s GROUP BY ROLLUP (s.RDESCRIPTION, s.CATEGORYNAME) HAVING GROUPING_ID(s.RDESCRIPTION, s.CATEGORYNAME) IN (0, 1)) PIVOT(SUM(sum) FOR cn IN ('Beverages' as "Beverages", 'Condiments' as "Condiments", 'Confections' as "Confections", 'Dairy Products' as "Dairy Products", 'Grains/Cereals' as "Grains/Cereals", 'Meat/Poultry' as "Meat/Poultry", 'Produce' as "Produce", 'Seafood' as "Seafood", 'Total' as "Total"))
+  ) a
+GROUP BY ROLLUP (a.RD)
+SELECT NVL(to_char(a.RD), 'Total') as RD, SUM(a."Beverages") as "Beverages", SUM(a."Condiments") as "Condiments", SUM(a."Confections") as "Confections", SUM(a."Confections") as "Confections", SUM(a."Dairy Products") as "Dairy Products", SUM(a."Grains/Cereals") as "Grains/Cereals", SUM(a."Meat/Poultry") as "Meat/Poultry", SUM(a."Produce") as "Produce", SUM(a."Seafood") as "Seafood", SUM(a."Total") as "Total"
+FROM
+  (
+    SELECT * FROM (SELECT DECODE(s.RDESCRIPTION, null,'Total', s.RDESCRIPTION) as RD, DECODE(s.CATEGORYNAME, null, 'Total', s.CATEGORYNAME) as CN, SUM(s.sum) as SUM FROM (SELECT DISTINCT sub_sum.sum, c.CategoryName, r.RDescription FROM Orders o, OrderDetails od, Products p, Categories c, EmployeeTerritories et, Territories t, Region r, (SELECT od.OrderID, od.UnitPrice * od.Quantity - od.Quantity * od.Discount AS sum FROM OrderDetails od) sub_sum WHERE 1 = 1 AND o.OrderID = od.OrderID AND od.ProductID = p.ProductID AND p.CategoryID = c.CategoryID AND o.EmployeeID = et.EmployeeID AND et.TerritoryID = t.TerritoryID AND t.RegionID = r.RegionID AND o.OrderID = sub_sum.OrderID) s GROUP BY ROLLUP (s.RDESCRIPTION, s.CATEGORYNAME) HAVING GROUPING_ID(s.RDESCRIPTION, s.CATEGORYNAME) IN (0, 1)) PIVOT(SUM(sum) FOR cn IN ('Beverages' as "Beverages", 'Condiments' as "Condiments", 'Confections' as "Confections", 'Dairy Products' as "Dairy Products", 'Grains/Cereals' as "Grains/Cereals", 'Meat/Poultry' as "Meat/Poultry", 'Produce' as "Produce", 'Seafood' as "Seafood", 'Total' as "Total"))
+  ) a
+GROUP BY ROLLUP (a.RD)
+;
