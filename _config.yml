@@ -11,6 +11,9 @@ description: 개발 블로그
 # url: "http://yourdomain.com" # the base hostname & protocol for your site
 # twitter_username: jekyllrb
 github_username: banbanmunani
+g-analytics: UA-111812071-1
+
+
 permalink: /:year/:month/:day/:title/
 # this is the url root of the view source link on the footer page.
 viewsourceroot: https://github.com/LiXizhi/LiXizhi.github.io/blob/master/
