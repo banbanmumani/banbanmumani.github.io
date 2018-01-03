@@ -6,13 +6,15 @@
  <!--  <body data-spy="scroll" data-target="#myAffix"> -->
   <body>
 
+    {% include social_reply.html %}
+
     {% include header.html %}
 
     <div id="main" class="container main">
       {{ content }}
     </div>
 
-    
+
     <div id="top" data-toggle="tooltip" data-placement="left" title="back to top">
       <a href="javascript:;">
         <div class="arrow"></div>
@@ -23,6 +25,6 @@
     {% include footer.html %}
 
     {% include newpost.html %}
-  
+
   </body>
 </html>
